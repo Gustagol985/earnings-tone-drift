@@ -1,0 +1,81 @@
+ticker,start_date,end_date
+# ---------------------------------------------------------------------------
+# 30 companies: 24 still listed + 6 that left the index during the sample.
+# The 6 removals are the point. A universe of survivors only would delete the
+# firms where deteriorating tone should predict the worst returns.
+#
+# start_date 1900-01-01 = "in the index for this whole study period" (true for
+# all of these across 2019-2025). end_date blank = still a member.
+#
+# The 6 end_dates below were checked against S&P Dow Jones Indices' own
+# index-change announcements (Aug 2026). Three are the exact effective date
+# S&P published; three are the deal-close/delisting date, which lands within a
+# few days of the index effective date.
+#
+# Where the two differ, this file uses the EARLIER date on purpose. Removing a
+# firm slightly early can only discard calls; removing it slightly late would
+# admit a call made when it was no longer a constituent. Discarding data is a
+# recoverable mistake, leaking it is not.
+#
+# In practice the difference is immaterial here: for it to change anything, a
+# firm would have to have held an earnings call inside that few-day gap, and
+# none of these did — they had all stopped reporting by then.
+# ---------------------------------------------------------------------------
+
+# --- technology ---
+AAPL,1900-01-01,
+MSFT,1900-01-01,
+NVDA,1900-01-01,
+CRM,1900-01-01,
+ORCL,1900-01-01,
+
+# --- financials ---
+JPM,1900-01-01,
+GS,1900-01-01,
+BAC,1900-01-01,
+
+# --- healthcare ---
+JNJ,1900-01-01,
+PFE,1900-01-01,
+UNH,1900-01-01,
+
+# --- consumer discretionary ---
+WMT,1900-01-01,
+HD,1900-01-01,
+NKE,1900-01-01,
+SBUX,1900-01-01,
+
+# --- industrials ---
+CAT,1900-01-01,
+BA,1900-01-01,
+UPS,1900-01-01,
+
+# --- energy ---
+XOM,1900-01-01,
+CVX,1900-01-01,
+
+# --- communications / media ---
+DIS,1900-01-01,
+VZ,1900-01-01,
+
+# --- staples ---
+PG,1900-01-01,
+KO,1900-01-01,
+
+# --- left the index during the sample ---
+# Bank failures, 2023. All three dates are S&P's published effective date.
+# SVB Financial -> replaced by Insulet (PODD), effective pre-open 15 Mar 2023
+SIVB,1900-01-01,2023-03-15
+# Signature Bank -> replaced by Bunge (BG), effective pre-open 15 Mar 2023
+SBNY,1900-01-01,2023-03-15
+# First Republic -> replaced by Axon (AXON), effective pre-open 4 May 2023
+FRC,1900-01-01,2023-05-04
+#
+# Acquisitions. These are deal-close / delisting dates; S&P's effective date
+# was the same day or a few days later, so these err early by design.
+# Activision Blizzard -> Microsoft deal closed 13 Oct 2023
+ATVI,1900-01-01,2023-10-13
+# VMware -> Broadcom deal closed, NYSE delisting 22 Nov 2023
+VMW,1900-01-01,2023-11-22
+# Pioneer Natural Resources -> Exxon deal closed 3 May 2024
+PXD,1900-01-01,2024-05-03

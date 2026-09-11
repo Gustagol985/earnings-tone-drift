@@ -1,0 +1,10 @@
+pandas>=2.0
+numpy>=1.24
+statsmodels>=0.14
+scipy>=1.10
+pyarrow>=14.0
+requests>=2.31
+matplotlib>=3.7
+pytest>=7.4
+# optional - only needed for --scorer llm
+anthropic>=0.40

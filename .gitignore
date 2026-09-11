@@ -1,0 +1,67 @@
+# ---------------------------------------------------------------------------
+# Virtual environment — 469 MB, and machine-specific. Rebuilt from
+# requirements.txt in about a minute. Never commit this.
+# ---------------------------------------------------------------------------
+.venv/
+venv/
+env/
+
+# ---------------------------------------------------------------------------
+# Python bytecode and test caches
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# ---------------------------------------------------------------------------
+# Generated output. Every file here is reproducible from committed code plus
+# committed data — `validate` regenerates the synthetic worlds, `run` rebuilds
+# the report. Keeping them out means the repo carries sources, not artefacts.
+# ---------------------------------------------------------------------------
+output/
+
+# ---------------------------------------------------------------------------
+# LLM response cache. Local, potentially large, and rebuildable (at cost).
+# ---------------------------------------------------------------------------
+*.sqlite
+*.sqlite3
+
+# ---------------------------------------------------------------------------
+# Secrets. The API key lives in the ALPHAVANTAGE_API_KEY environment variable
+# and must never be written to a file in this repo — these patterns are a
+# backstop, not the mechanism.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+*.key
+secrets.*
+
+# ---------------------------------------------------------------------------
+# Temp files from the atomic parquet/json writes in scripts/ingest.py
+# ---------------------------------------------------------------------------
+*.tmp.parquet
+*.tmp.json
+
+# ---------------------------------------------------------------------------
+# OS / editor cruft
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ---------------------------------------------------------------------------
+# NOT ignored, deliberately:
+#
+#   data/real/transcripts.parquet    14 MB, and five weeks of downloading at
+#                                    25 requests/day. Losing it means starting
+#                                    over. Committing it makes the collection
+#                                    portable, backed up, and reproducible by
+#                                    anyone reading the study.
+#   data/real/ingest_state.json      lets the download resume on another
+#                                    machine instead of re-fetching.
+#   data/real/earnings_dates.json    report dates; expensive to re-fetch.
+#   data/real/universe.csv           the point-in-time membership list.
+# ---------------------------------------------------------------------------
