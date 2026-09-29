@@ -230,6 +230,12 @@ def run(
         state.clear_window()
         opens = None
 
+    # Loaded before the early return below, which also reports progress and
+    # needs the dates to tell real remaining work from unfetchable quarters.
+    all_dates: Dict[str, Dict[str, str]] = (
+        json.loads(dates_path.read_text(encoding="utf-8")) if dates_path.exists() else {}
+    )
+
     already = state.spent_today()
     remaining = max(budget - already, 0)
     print(f"budget {budget}/day · already used today: {already} · remaining: {remaining}")
@@ -240,12 +246,9 @@ def run(
         )
     if remaining == 0:
         print("Nothing to do today. Run again tomorrow.")
-        report_progress(state, tickers, quarters)
+        report_progress(state, tickers, quarters, all_dates)
         return 0
 
-    all_dates: Dict[str, Dict[str, str]] = (
-        json.loads(dates_path.read_text(encoding="utf-8")) if dates_path.exists() else {}
-    )
     used = 0
 
     # -- phase 1: earnings dates -------------------------------------------
@@ -262,7 +265,7 @@ def run(
             state.charge(used)
             state.save()
             _flush_dates(dates_path, all_dates)
-            report_progress(state, tickers, quarters)
+            report_progress(state, tickers, quarters, all_dates)
             return 0
         used += 1
         state.earnings[tkr] = "done"
@@ -276,7 +279,7 @@ def run(
         state.charge(used)
         state.save()
         print("\nPhase 1 not finished — stopping before transcripts.")
-        report_progress(state, tickers, quarters)
+        report_progress(state, tickers, quarters, all_dates)
         return 0
 
     # -- phase 2: transcripts ----------------------------------------------
@@ -324,7 +327,7 @@ def run(
     state.charge(used)
     state.save()
     print(f"\nUsed {used} requests this run.")
-    report_progress(state, tickers, quarters)
+    report_progress(state, tickers, quarters, all_dates)
     return 0
 
 
@@ -335,12 +338,36 @@ def _flush_dates(path: Path, data: dict) -> None:
     tmp.replace(path)
 
 
-def report_progress(state: State, tickers: List[str], quarters: List[str]) -> None:
+def report_progress(
+    state: State,
+    tickers: List[str],
+    quarters: List[str],
+    all_dates: Optional[Dict[str, Dict[str, str]]] = None,
+) -> None:
+    """Print progress against the work that is actually fetchable.
+
+    The remaining count must be derived from quarters the vendor has dates for,
+    not from tickers x quarters. Delisted firms return no dates at all, so a
+    naive target counts them forever: six such firms over 28 quarters left this
+    readout permanently stuck at "168 remaining" after the download had in fact
+    finished - a progress bar that can never reach the end is worse than none.
+    """
     dated = sum(1 for t in tickers if state.earnings.get(t) == "done")
     got = sum(1 for v in state.transcripts.values() if v == "done")
     empty = sum(1 for v in state.transcripts.values() if v == "empty")
-    target = len(tickers) * len(quarters)
-    left = max(target - len(state.transcripts), 0) + (len(tickers) - dated)
+
+    if all_dates is None:
+        left = max(len(tickers) * len(quarters) - len(state.transcripts), 0)
+        unavailable = 0
+    else:
+        fetchable = [
+            (t, q) for t in tickers for q in quarters if q in all_dates.get(t, {})
+        ]
+        left = sum(
+            1 for t, q in fetchable if state.transcripts.get(f"{t}:{q}") is None
+        )
+        unavailable = [t for t in tickers if not all_dates.get(t)]
+    left += len(tickers) - dated
 
     print("\n" + "=" * 58)
     print("PROGRESS")
@@ -348,6 +375,8 @@ def report_progress(state: State, tickers: List[str], quarters: List[str]) -> No
     print(f"  tickers dated       : {dated}/{len(tickers)}")
     print(f"  transcripts stored  : {got}")
     print(f"  quarters with none  : {empty}")
+    if unavailable:
+        print(f"  no vendor data at all: {len(unavailable)} ({', '.join(unavailable)})")
     print(f"  requests remaining  : ~{left}")
     if left:
         print(f"  days left at 25/day : ~{-(-left // 25)}")
@@ -483,8 +512,13 @@ def main(argv=None) -> int:
 
     if a.cmd == "status":
         st = State(a.data_dir / "ingest_state.json")
+        dpath = a.data_dir / "earnings_dates.json"
+        dates = json.loads(dpath.read_text(encoding="utf-8")) if dpath.exists() else None
         report_progress(
-            st, load_universe(a.data_dir / "universe.csv"), quarters_between(a.start, a.end)
+            st,
+            load_universe(a.data_dir / "universe.csv"),
+            quarters_between(a.start, a.end),
+            dates,
         )
         return 0
 
