@@ -116,7 +116,13 @@ def run(
     if verbose:
         print("[2/6] building within-firm differenced features")
     panel = features.build_panel(scores)
+    n_scored = len(panel)
+    n_firms = int(panel["ticker"].nunique())
     panel = features.investable(panel)
+    # Each firm's first MIN_HISTORY calls go into building its own baseline and
+    # cannot yield a signal. Recorded so the report can explain the gap between
+    # calls scored and events analysed, rather than leaving it unaccounted for.
+    n_warmup = n_scored - len(panel)
 
     prices = prices.copy()
     prices["date"] = pd.to_datetime(prices["date"])
@@ -205,6 +211,9 @@ def run(
             "point_in_time_universe": universe.pit,
             "n_transcripts": len(transcripts),
             "n_transcripts_before_qa_filter": n_before,
+            "n_warmup": n_warmup,
+            "n_firms": n_firms,
+            "min_history": features.MIN_HISTORY,
             "dropped_no_qa": len(dropped_no_qa),
             "dropped_no_qa_list": [
                 f"{r.ticker} {r.fiscal_period}" for r in dropped_no_qa.itertuples()

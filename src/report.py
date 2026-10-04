@@ -72,8 +72,17 @@ def build(res: RunResult, title: str = "Earnings Call Tone Drift") -> str:
         "",
         f"- Scorer: `{m.get('scorer')}`" + (f" (model `{m.get('model')}`)" if m.get("model") else ""),
         f"- Transcripts scored: {m.get('n_transcripts')}",
-        f"- Events with complete price windows: {m.get('n_events')}",
-        f"- Events dropped: {m.get('n_dropped')}",
+        f"- Warm-up calls with no baseline yet: {m.get('n_warmup')}"
+        f" ({m.get('n_firms')} firms × {m.get('min_history')} prior calls required)",
+        f"- Events carried into the study: {m.get('n_events')}",
+        f"- Events dropped for incomplete price windows: {m.get('n_dropped')}",
+        "",
+        "Every firm's first "
+        f"{m.get('min_history')} calls are consumed building its baseline and "
+        "cannot produce a signal — the measure is a change against a firm's own "
+        "history, so that history has to exist first. Stating the number matters "
+        "because otherwise the scored count and the analysed count differ with no "
+        "visible explanation.",
         "",
     ]
 

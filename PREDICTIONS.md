@@ -83,7 +83,18 @@ researcher-degrees-of-freedom problem this project exists to avoid.
 Leaving the weakness in place and predicting it in advance is worth more than
 quietly patching it.
 
-**Outcome:** _to be completed after the LLM comparison._
+**Outcome — UNTESTED (4 October 2026).**
+
+The study was run with the lexical scorer only. The LLM comparison that would
+test this prediction has not been paid for, so P1 remains open rather than
+confirmed or refuted.
+
+One piece of indirect evidence, recorded for completeness and explicitly *not*
+counted as a result: in the final run, evasion's standalone coefficient on drift
+carried t = 1.15 (p = 0.25) — weak, and weaker than commitment's t = 2.31. That
+is consistent with evasion being poorly measured, but it is equally consistent
+with there being nothing to measure, since no axis predicted anything. The
+prediction cannot be settled without the LLM scorer actually being run.
 
 ---
 
@@ -123,7 +134,36 @@ disappointment, and so that a positive result has to clear a bar that was set
 before it appeared. If the effect does show up, this file is the evidence that
 it was not the outcome being hunted for.
 
-**Outcome:** _to be completed after the final run._
+**Outcome — CONFIRMED (4 October 2026).**
+
+Both stated conditions were met, and the underlying claim held on every measure.
+
+| predicted | observed |
+|---|---|
+| bootstrap 95% CI includes zero | **[−0.43, 1.16]** — includes zero |
+| deflated Sharpe below 0.95 | **0.218** |
+
+Supporting detail from the run (617 transcripts scored, 521 events analysed):
+
+- Differenced signal on drift: **t = 1.51, p = 0.13** — not significant.
+- Net Sharpe **0.35**; bootstrap P(Sharpe ≤ 0) = **0.203**.
+- **Nothing survived FDR correction** across 10 regression specifications.
+- Quintiles were flat and non-monotone: −0.82%, +0.15%, +0.27%, −0.35%, 0.00%.
+
+The prediction also anticipated the specific trap that materialised. The
+`long_only` variant returned **18.0%/yr, Sharpe 0.94, Newey–West t = 2.22** —
+the most attractive number the study produced, and entirely market beta. The
+sample is US large-cap over 2019–2025; being long that is not a finding. The
+long/short construction, which removes it, earns nothing distinguishable from
+zero.
+
+`axis::commitment` reached p = 0.021 standalone, which would have been tempting
+in isolation. Its FDR-adjusted q across the ten specifications is **0.21** —
+precisely what testing ten things and keeping the best produces.
+
+Recording the prediction in advance is what makes this a confirmed hypothesis
+rather than a disappointing result, and what makes the 18%/yr variant something
+to explain rather than something to report.
 
 ---
 

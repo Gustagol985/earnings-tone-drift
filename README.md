@@ -5,9 +5,56 @@ that same management team spoke on their own last four calls — predict abnorma
 returns over the following quarter, after controlling for the market's immediate
 reaction to the call?
 
+**No.** On 667 transcripts from 24 S&P 500 companies over 2019–2025, the signal
+does not predict drift.
+
+| | |
+|---|---|
+| Differenced signal on drift | **t = 1.51**, p = 0.13 |
+| Net Sharpe (long/short, 10bps costs) | **0.35** |
+| Bootstrap 95% CI on Sharpe | **[−0.43, 1.16]** — includes zero |
+| Deflated Sharpe (15 specifications) | **0.218** — needs > 0.95 |
+| Specifications surviving FDR | **none** |
+
+Quintile returns are flat and non-monotone (−0.82%, +0.15%, +0.27%, −0.35%,
+0.00%). A real effect would ladder across them.
+
+**This was the predicted outcome.** [`PREDICTIONS.md`](PREDICTIONS.md) records,
+dated 1 September 2026 — after scoring, before any returns were examined — that
+the effect would not survive costs, that the bootstrap interval would include
+zero, and that the deflated Sharpe would fall below 0.95. All three held.
+
+### The result that looks like success
+
+One backtest variant returns **18.0%/yr, Sharpe 0.94, Newey–West t = 2.22**:
+`long_only`. It is the most attractive number in the study, and it is entirely
+market beta — the sample is US large-cap across a 2019–2025 bull market, and
+being long that is not a finding. The long/short construction removes it and
+earns nothing distinguishable from zero.
+
+Similarly, `axis::commitment` reaches p = 0.021 on its own. Its FDR-adjusted q
+across the ten specifications tested is **0.21** — exactly what testing ten
+things and keeping the best produces.
+
+Both are reported here rather than buried, because recognising them is the point
+of the project.
+
 The pipeline scores every transcript on six axes of speaking *manner*,
 differences each axis within firm, runs an event study on the resulting signal,
 and backtests it in calendar time with transaction costs.
+
+### Sample construction, end to end
+
+| stage | calls | why the drop |
+|---|---:|---|
+| collected | 667 | 24 firms, 2019-2025; Walmart short 5 quarters on vendor coverage |
+| usable Q&A | 617 | 50 excluded: prepared remarks only, no Q&A. Two of six axes live there |
+| produce a signal | 521 | 96 warm-up calls — each firm's first 4 build its own baseline |
+| complete price window | 521 | none lost |
+
+The warm-up figure is exactly 24 firms x 4 prior calls. The measure is a change
+against a firm's own history, so that history has to exist before anything can
+be measured against it.
 
 ---
 
