@@ -5,6 +5,7 @@ scipy>=1.10
 pyarrow>=14.0
 requests>=2.31
 matplotlib>=3.7
+yfinance>=1.7   # daily total-return prices (Stooq blocked bots Oct 2026)
 pytest>=7.4
 # optional - only needed for --scorer llm
 anthropic>=0.40

@@ -264,14 +264,86 @@ class LocalPrices:
         return df.loc[mask, PRICE_COLS].reset_index(drop=True)
 
 
+class YahooPrices:
+    """Daily total-return prices via yfinance. No API key, no quota.
+
+    `auto_adjust=True` returns prices adjusted for both splits and dividends,
+    so `adj_close` here is a genuine total return rather than the price-only
+    approximation the Stooq path provided. For a 63-day drift study the
+    dividend component is small, but it is no longer an acknowledged gap.
+
+    SPY stands in for the market factor and is stored under the 'MKT'
+    pseudo-ticker the event study expects.
+    """
+
+    name = "yahoo"
+    MARKET_PROXY = "SPY"
+
+    def fetch(self, tickers: List[str], start: str, end: str) -> pd.DataFrame:
+        try:
+            import yfinance as yf
+        except ImportError as exc:  # pragma: no cover
+            raise ProviderError(
+                "yfinance not installed. `pip install yfinance`, or use "
+                "--prices local if prices are already cached."
+            ) from exc
+
+        symbols = sorted(set(tickers) | {self.MARKET_PROXY})
+        raw = yf.download(
+            symbols,
+            start=start,
+            end=end,
+            auto_adjust=True,
+            progress=False,
+            threads=False,
+        )
+        if raw is None or raw.empty:
+            raise ProviderError("Yahoo returned no price data")
+
+        # One ticker yields flat columns, several yield a MultiIndex. Normalise
+        # to a ticker-keyed frame so the rest of the function is shape-agnostic.
+        close = raw["Close"] if isinstance(raw.columns, pd.MultiIndex) else raw[["Close"]]
+        if not isinstance(raw.columns, pd.MultiIndex):
+            close.columns = [symbols[0]]
+
+        frames = []
+        missing = []
+        for sym in symbols:
+            if sym not in close.columns:
+                missing.append(sym)
+                continue
+            s = close[sym].dropna()
+            if s.empty:
+                missing.append(sym)
+                continue
+            out_name = "MKT" if sym == self.MARKET_PROXY else sym
+            frames.append(
+                pd.DataFrame(
+                    {
+                        "ticker": out_name,
+                        "date": pd.to_datetime(s.index),
+                        "close": s.to_numpy(),
+                        "adj_close": s.to_numpy(),
+                    }
+                )
+            )
+
+        if missing:
+            # Surfaced rather than swallowed: a firm silently absent from the
+            # price panel is dropped from the study with no trace in the report.
+            print(f"  WARNING: no Yahoo price data for {sorted(missing)}")
+        if not frames:
+            raise ProviderError("Yahoo returned no usable series")
+        return pd.concat(frames, ignore_index=True)[PRICE_COLS]
+
+
 class StooqPrices:
     """Free daily OHLC, no key required. Adequate for a study at daily frequency.
 
-    Caveat to state plainly rather than bury: Stooq's history is split-adjusted
-    but not dividend-adjusted for all names, so `adj_close` here is a close
-    approximation, not a true total return. For a drift study over 60 trading
-    days the dividend contribution is small relative to the effect being
-    measured, but it is a known limitation, not a hidden one.
+    NOTE (Oct 2026): Stooq now serves a bot-protection page instead of CSV on
+    every URL variant, so this path no longer works programmatically. Kept in
+    case it is restored; use `yahoo` instead. Stooq history was also only
+    split-adjusted, not dividend-adjusted, which `yahoo` fixes.
     """
 
     name = "stooq"
@@ -315,4 +387,4 @@ TRANSCRIPT_PROVIDERS = {
     "alphavantage": AlphaVantageTranscripts,
     "fmp": FMPTranscripts,
 }
-PRICE_PROVIDERS = {"local": LocalPrices, "stooq": StooqPrices}
+PRICE_PROVIDERS = {"local": LocalPrices, "yahoo": YahooPrices, "stooq": StooqPrices}

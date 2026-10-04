@@ -100,7 +100,7 @@ def main(argv=None) -> int:
     r.add_argument("--data-dir", type=Path, default=Path("data/synthetic"))
     r.add_argument("--out", type=Path, default=Path("output"))
     r.add_argument("--transcripts", choices=list(TRANSCRIPT_PROVIDERS), default="local")
-    r.add_argument("--prices", choices=list(PRICE_PROVIDERS), default="local")
+    r.add_argument("--prices", choices=list(PRICE_PROVIDERS), default="yahoo")
     r.add_argument("--scorer", choices=["lexical", "llm"], default="lexical")
     r.add_argument("--model", default="claude-sonnet-5")
     r.add_argument("--tickers", nargs="*", default=None)
